@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>NovaPlay - Media Search & Downloader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <div>
+        <!-- Navigation Header -->
+        <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-50 shadow-lg">
+            <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="resetToHome()">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl flex items-center justify-center font-bold text-lg text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition">
+                        <i class="fa-solid fa-play"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold text-white tracking-tight">NovaPlay</span>
+                        <span class="block text-[10px] text-indigo-400 font-mono uppercase tracking-widest">Infinite Impact</span>
+                    </div>
+                </div>
+                <form onsubmit="executeSearch(event)" class="w-full sm:max-w-xl relative">
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400 text-sm"></i>
+                        <input type="text" id="searchInput" placeholder="Search track name or paste YouTube URL..." 
+                            class="w-full bg-slate-950/80 border border-slate-800 rounded-xl py-3 pl-11 pr-24 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition shadow-inner">
+                        <div class="absolute right-1.5 flex items-center gap-1.5">
+                            <button type="button" onclick="pasteClipboard()" title="Paste" class="p-2 text-xs text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-lg border border-slate-800 transition">
+                                <i class="fa-regular fa-clipboard"></i>
+                            </button>
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-arrow-right"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </header>
+
+        <!-- Main Body -->
+        <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+            <!-- Home / Welcome State -->
+            <section id="welcomeState" class="text-center py-10 sm:py-16 space-y-8">
+                <div class="w-20 h-20 bg-gradient-to-br from-slate-900 to-slate-900 border border-slate-800 rounded-3xl mx-auto flex items-center justify-center text-indigo-400 text-3xl shadow-2xl shadow-indigo-500/5">
+                    <i class="fa-solid fa-compact-disc animate-spin-slow"></i>
+                </div>
+                <div class="max-w-2xl mx-auto space-y-3">
+                    <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">Search & Download Any Track</h1>
+                    <p class="text-slate-400 text-sm sm:text-base leading-relaxed">Search by track name or paste YouTube video links to stream and save high-quality MP3 audio or MP4 videos securely via backend proxy.</p>
+                </div>
+
+                <!-- Rich Trending & Popular Suggestions Grid (>10 items) -->
+                <div class="pt-2 max-w-3xl mx-auto space-y-3">
+                    <div class="flex items-center justify-center gap-2 text-xs text-slate-500 font-mono uppercase tracking-widest">
+                        <i class="fa-solid fa-fire text-amber-500"></i> Trending & Popular Song Suggestions
+                    </div>
+                    <div class="flex flex-wrap items-center justify-center gap-2.5">
+                        <button onclick="quickSearch('Alan Walker Faded')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> Alan Walker Faded
+                        </button>
+                        <button onclick="quickSearch('Iniko Jericho')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> Iniko Jericho
+                        </button>
+                        <button onclick="quickSearch('Luis Fonsi Despacito')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> Luis Fonsi Despacito
+                        </button>
+                        <button onclick="quickSearch('Lofi Hip Hop Beats')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-headphones text-indigo-400"></i> Lofi Hip Hop Beats
+                        </button>
+                        <button onclick="quickSearch('The Weeknd Blinding Lights')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> The Weeknd Blinding Lights
+                        </button>
+                        <button onclick="quickSearch('Ed Sheeran Shape of You')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> Ed Sheeran Shape of You
+                        </button>
+                        <button onclick="quickSearch('Akon Lonely')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> Akon Lonely
+                        </button>
+                        <button onclick="quickSearch('Celine Dion My Heart Will Go On')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> Celine Dion My Heart
+                        </button>
+                        <button onclick="quickSearch('Bob Marley One Love')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> Bob Marley One Love
+                        </button>
+                        <button onclick="quickSearch('Sauti Sol Extravaganza')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> Sauti Sol Extravaganza
+                        </button>
+                        <button onclick="quickSearch('Burna Boy Last Last')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> Burna Boy Last Last
+                        </button>
+                        <button onclick="quickSearch('Rema Calm Down')" class="text-xs bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/50 px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-music text-indigo-400"></i> Rema Calm Down
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Loading Spinner -->
+            <div id="loader" class="hidden py-20 text-center space-y-4">
+                <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p id="loaderText" class="text-sm text-slate-400 font-medium">Searching YouTube database...</p>
+            </div>
+
+            <!-- Search Results View -->
+            <section id="resultsSection" class="hidden space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
+                    <h2 class="text-base font-bold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-list text-indigo-400"></i> Search Results
+                    </h2>
+                    <span id="resultCount" class="text-xs text-slate-400 font-mono bg-slate-900 px-3 py-1 rounded-full border border-slate-800"></span>
+                </div>
+                <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
+            </section>
+
+            <!-- Video Player & Downloader View -->
+            <section id="playerSection" class="hidden space-y-6">
+                <button onclick="backToResults()" class="text-xs text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 px-4 py-2 rounded-xl transition inline-flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-arrow-left"></i> Back to results
+                </button>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Embedded YouTube Player -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="aspect-video bg-black rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl">
+                            <iframe id="videoIframe" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                        </div>
+                        <div class="space-y-1 bg-slate-900/50 border border-slate-800/60 p-4 rounded-2xl">
+                            <h2 id="activeVideoTitle" class="text-base sm:text-lg font-bold text-white line-clamp-2 leading-snug"></h2>
+                            <p id="activeVideoAuthor" class="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-check text-indigo-400"></i> <span></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Downloader Control Panel -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl h-fit">
+                        <div class="border-b border-slate-800 pb-4">
+                            <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+                                <i class="fa-solid fa-download text-indigo-400"></i> Download Media
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Select your preferred format & quality</p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-xs text-slate-400 font-mono uppercase tracking-wider">Format & Quality</label>
+                            <select id="formatSelect" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                                <option value="mp3">Audio - MP3 (High Quality)</option>
+                                <option value="360">Video - MP4 (360p)</option>
+                                <option value="720" selected>Video - MP4 (720p HD)</option>
+                                <option value="1080">Video - MP4 (1080p Full HD)</option>
+                                <option value="4k">Video - MP4 (4K Ultra HD)</option>
+                            </select>
+                        </div>
+
+                        <button id="downloadBtn" onclick="startDownloadProcess()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-3.5 rounded-xl transition shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-bolt"></i> Download Now
+                        </button>
+
+                        <!-- Progress Display & Proxy Stream Download Button -->
+                        <div id="progressBox" class="hidden space-y-3 bg-slate-950 border border-slate-800 p-4 rounded-xl">
+                            <div class="flex items-center justify-between text-xs">
+                                <span id="statusLabel" class="text-slate-400 font-medium">Initializing...</span>
+                                <span id="percentLabel" class="text-indigo-400 font-mono font-bold">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-800">
+                                <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-violet-500 h-full w-0 transition-all duration-300 rounded-full"></div>
+                            </div>
+                            
+                            <!-- Secure Proxy Download Link (Routes through /api/stream to completely block ey43.com ad wrappers) -->
+                            <a id="directDownloadLink" href="#" download class="hidden w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-3.5 rounded-xl text-center shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition">
+                                <i class="fa-solid fa-cloud-arrow-down text-sm"></i> Save File Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-900 py-5 px-6 text-center text-xs text-slate-500 mt-12">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span class="font-medium text-slate-400">NovaPlay Media Platform</span>
+            <span class="text-slate-500">Powered by Vinnie Digital Hub</span>
+        </div>
+    </footer>
+
+    <script>
+        let currentActiveTrack = null;
+        let lastSearchResults = [];
+
+        async function pasteClipboard() {
+            try { document.getElementById('searchInput').value = await navigator.clipboard.readText(); } catch (err) {}
+        }
+
+        function quickSearch(q) {
+            document.getElementById('searchInput').value = q;
+            executeSearch(new Event('submit'));
+        }
+
+        function resetToHome() {
+            document.getElementById('welcomeState').classList.remove('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('playerSection').classList.add('hidden');
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('videoIframe').src = '';
+            document.getElementById('searchInput').value = '';
+        }
+
+        async function executeSearch(e) {
+            if (e) e.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            hideAllSections();
+            showLoader('Searching YouTube database...');
+
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                hideLoader();
+
+                if (!data.success || !data.results || data.results.length === 0) {
+                    alert('No results found.');
+                    document.getElementById('welcomeState').classList.remove('hidden');
+                    return;
+                }
+
+                if (data.isDirectUrl && data.results.length === 1) {
+                    openVideoPlayer(data.results[0]);
+                } else {
+                    lastSearchResults = data.results;
+                    renderSearchResults(data.results);
+                }
+            } catch (err) {
+                hideLoader();
+                document.getElementById('welcomeState').classList.remove('hidden');
+            }
+        }
+
+        function renderSearchResults(videos) {
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = '';
+            document.getElementById('resultCount').innerText = `${videos.length} tracks found`;
+
+            videos.forEach(v => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-indigo-500/50 hover:shadow-xl hover:shadow-indigo-500/5 transition duration-300 cursor-pointer flex flex-col justify-between group';
+                card.onclick = () => openVideoPlayer(v);
+                const thumb = v.thumbnail ? v.thumbnail : `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
+                card.innerHTML = `
+                    <div class="relative aspect-video bg-black overflow-hidden">
+                        <img src="${thumb}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <span class="absolute bottom-2 right-2 bg-slate-950/90 text-slate-300 px-2 py-0.5 rounded-lg text-xs font-mono border border-slate-800">${v.duration}</span>
+                    </div>
+                    <div class="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                        <h3 class="font-semibold text-xs text-slate-200 group-hover:text-indigo-400 transition line-clamp-2 leading-relaxed">${v.title}</h3>
+                        <p class="text-xs text-slate-400 truncate"><i class="fa-solid fa-user text-slate-500 mr-1.5"></i>${v.author}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            document.getElementById('resultsSection').classList.remove('hidden');
+        }
+
+        function openVideoPlayer(video) {
+            currentActiveTrack = video;
+            hideAllSections();
+            document.getElementById('activeVideoTitle').innerText = video.title;
+            document.querySelector('#activeVideoAuthor span').innerText = video.author;
+            document.getElementById('videoIframe').src = `https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1`;
+            document.getElementById('progressBox').classList.add('hidden');
+            document.getElementById('directDownloadLink').classList.add('hidden');
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Download Now`;
+            document.getElementById('playerSection').classList.remove('hidden');
+        }
+
+        function backToResults() {
+            document.getElementById('videoIframe').src = '';
+            document.getElementById('playerSection').classList.add('hidden');
+            if (lastSearchResults.length > 0) document.getElementById('resultsSection').classList.remove('hidden');
+            else document.getElementById('welcomeState').classList.remove('hidden');
+        }
+
+        async function startDownloadProcess() {
+            if (!currentActiveTrack) return;
+            const format = document.getElementById('formatSelect').value;
+            const btn = document.getElementById('downloadBtn');
+            const progressBox = document.getElementById('progressBox');
+            const statusLabel = document.getElementById('statusLabel');
+            const percentLabel = document.getElementById('percentLabel');
+            const progressBar = document.getElementById('progressBar');
+            const directDownloadLink = document.getElementById('directDownloadLink');
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Converting...`;
+            progressBox.classList.remove('hidden');
+            directDownloadLink.classList.add('hidden');
+            progressBar.style.width = '10%';
+            statusLabel.innerText = 'Initializing converter...';
+            percentLabel.innerText = '10%';
+
+            try {
+                const trackUrl = currentActiveTrack.url || `https://www.youtube.com/watch?v=${currentActiveTrack.id}`;
+                const res = await fetch(`/api/download?url=${encodeURIComponent(trackUrl)}&format=${format}`);
+                const data = await res.json();
+
+                if (!data.success && !data.download_url && !data.id && !data.progress_url) {
+                    alert('Converter failed.');
+                    resetDownloadButton();
+                    return;
+                }
+
+                if (data.download_url) {
+                    showReadyDownload(data);
+                    return;
+                }
+
+                const jobId = data.id || (data.progress_url ? data.progress_url.split('id=')[1] : null);
+                pollConversionStatus(jobId);
+            } catch (err) {
+                alert('Server request failed.');
+                resetDownloadButton();
+            }
+        }
+
+        function showReadyDownload(data) {
+            const statusLabel = document.getElementById('statusLabel');
+            const percentLabel = document.getElementById('percentLabel');
+            const progressBar = document.getElementById('progressBar');
+            const btn = document.getElementById('downloadBtn');
+            const directDownloadLink = document.getElementById('directDownloadLink');
+            const format = document.getElementById('formatSelect').value;
+            const ext = format === 'mp3' ? 'mp3' : 'mp4';
+            const cleanTitle = (currentActiveTrack.title || 'media').replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'media';
+            const sourceUrl = currentActiveTrack.url || `https://www.youtube.com/watch?v=${currentActiveTrack.id}`;
+            const proxyStreamUrl = `/api/stream?url=${encodeURIComponent(data.download_url)}&source=${encodeURIComponent(sourceUrl)}&title=${encodeURIComponent(cleanTitle)}&format=${format}`;
+
+            progressBar.style.width = '100%';
+            percentLabel.innerText = '100%';
+            statusLabel.innerText = 'File ready!';
+            directDownloadLink.href = proxyStreamUrl;
+            directDownloadLink.setAttribute('download', `${cleanTitle}.${ext}`);
+            directDownloadLink.classList.remove('hidden');
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-check text-green-400"></i> Ready`;
+        }
+
+        async function pollConversionStatus(jobId) {
+            const statusLabel = document.getElementById('statusLabel');
+            const percentLabel = document.getElementById('percentLabel');
+            const progressBar = document.getElementById('progressBar');
+            const btn = document.getElementById('downloadBtn');
+            const directDownloadLink = document.getElementById('directDownloadLink');
+
+            const timer = setInterval(async () => {
+                try {
+                    const res = await fetch(`/api/progress?id=${encodeURIComponent(jobId)}`);
+                    const data = await res.json();
+
+                    let rawProgress = data.progress !== undefined ? data.progress : 0;
+                    let percent = rawProgress > 100 ? Math.floor(rawProgress / 10) : rawProgress;
+                    if (percent < 15 && (data.download_url || data.text === 'Finished')) {
+                        percent = 100;
+                    } else if (percent < 15) {
+                        percent = 45;
+                    }
+
+                    progressBar.style.width = `${percent}%`;
+                    percentLabel.innerText = `${percent}%`;
+                    statusLabel.innerText = data.text || 'Processing track...';
+
+                    if (data.download_url || data.progress === 1000 || data.text === 'Finished') {
+                        clearInterval(timer);
+                        progressBar.style.width = '100%';
+                        percentLabel.innerText = '100%';
+                        statusLabel.innerText = 'File ready!';
+
+                        const format = document.getElementById('formatSelect').value;
+                        const ext = format === 'mp3' ? 'mp3' : 'mp4';
+                        const cleanTitle = (currentActiveTrack.title || 'media').replace(/[^a-zA-Z0-9 _-]/g, '').trim();
+
+                        // Route through backend proxy /api/stream to completely bypass ad wrappers and ey43.com redirects
+                        const sourceUrl = currentActiveTrack.url || `https://www.youtube.com/watch?v=${currentActiveTrack.id}`;
+                        const proxyStreamUrl = `/api/stream?url=${encodeURIComponent(data.download_url)}&source=${encodeURIComponent(sourceUrl)}&title=${encodeURIComponent(cleanTitle)}&format=${format}`;
+
+                        directDownloadLink.href = proxyStreamUrl;
+                        directDownloadLink.setAttribute('download', `${cleanTitle}.${ext}`);
+                        directDownloadLink.classList.remove('hidden');
+
+                        btn.disabled = false;
+                        btn.innerHTML = `<i class="fa-solid fa-check text-green-400"></i> Ready`;
+                    }
+                } catch (err) {
+                    clearInterval(timer);
+                    statusLabel.innerText = 'Status check failed.';
+                    resetDownloadButton();
+                }
+            }, 3000);
+        }
+
+        function resetDownloadButton() {
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Download Now`;
+        }
+
+        function hideAllSections() {
+            document.getElementById('welcomeState').classList.add('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('playerSection').classList.add('hidden');
+        }
+
+        function showLoader(msg) {
+            document.getElementById('loaderText').innerText = msg;
+            document.getElementById('loader').classList.remove('hidden');
+        }
+
+        function hideLoader() { document.getElementById('loader').classList.add('hidden'); }
+    </script>
+</body>
+</html>
